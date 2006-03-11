@@ -1,0 +1,13 @@
+Changes
+examples/AJAX.js
+examples/hello.html
+examples/httpd.conf
+lib/Apache2/JSONRPC.pm
+lib/Apache2/JSONRPC/Dispatcher.pm
+Makefile.PL
+MANIFEST
+README
+t/Apache2-JSONRPC.t
+t/conf/extra.last.conf.in
+t/TEST.PL
+META.yml                                 Module meta-data (added by MakeMaker)

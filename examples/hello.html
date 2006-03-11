@@ -1,0 +1,46 @@
+<html>
+ <head>
+  <title>Hello, world.</title>
+  <script type="text/javascript" src="AJAX.js"></script>
+  <script type="text/javascript">
+
+    Create_Class("Hello", "JSONRPC");
+
+    Hello.prototype.who_am_i = function () {
+        this.Call_Server(this.who_i_am, "who_am_i");
+    }
+
+    Hello.prototype.who_i_am = function (ip) {
+        alert("Your IP is " + ip);
+    }
+  
+    Create_Class("LWP.UserAgent", "JSONRPC");
+    LWP.UserAgent.prototype.get_page = function (url) {
+        LWPer.Call_Server(this.write_page, "get", url);
+    };
+    LWP.UserAgent.prototype.write_page = function (result) {
+        if(result._content) {
+            this.frames[0].document.write(result._content);
+        } else {
+            this.frames[0].document.write("No content, result: " + result._rc);
+        }
+        this.frames[0].document.close();
+    };
+    
+    LWPer = new LWP.UserAgent;
+    LWPer.ID = 5;
+  
+    Talker = new Hello;
+    Talker.ID = 1;
+  
+  </script>
+ </head>
+ <body>
+  <h1>Hello, world.</h1>
+  <input type="button" onClick="Talker.who_am_i()" value="Who am I?" />
+  <input type="button" onClick="LWPer.get_page(document.getElementById('loadurl').value)" value="Load URL" />
+  <input type="text" name="loadurl" id="loadurl" value="" />
+  <br/>
+  <iframe id="well" width="640" height="480"></iframe>
+ </body>
+</html>

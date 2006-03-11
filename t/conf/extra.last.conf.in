@@ -1,0 +1,6 @@
+
+<Perl >
+   use lib "@ServerRoot@/../lib";
+</Perl>
+
+Include @ServerRoot@/../examples/httpd.conf

@@ -1,0 +1,6 @@
+Revision history for Perl extension Apache2::JSONRPC.
+
+0.01  Thu Mar  9 12:55:11 2006
+	- original version; created by h2xs 1.23 with options
+		-AXP -b 5.6.0 Apache2::JSONRPC
+
