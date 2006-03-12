@@ -1,5 +1,4 @@
 Changes
-examples/AJAX.js
 examples/hello.html
 examples/httpd.conf
 lib/Apache2/JSONRPC.pm
@@ -10,4 +9,5 @@ README
 t/Apache2-JSONRPC.t
 t/conf/extra.last.conf.in
 t/TEST.PL
+lib/Apache2/JSONRPC.js
 META.yml                                 Module meta-data (added by MakeMaker)

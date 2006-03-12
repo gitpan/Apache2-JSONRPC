@@ -3,7 +3,9 @@ package Apache2::JSONRPC;
 use strict;
 use warnings;
 use JSON::Syck;
-use Apache2::Const qw(TAKE1 OR_ALL OK HTTP_BAD_REQUEST SERVER_ERROR);
+use Apache2::Const qw(
+    TAKE1 OR_ALL OK HTTP_BAD_REQUEST SERVER_ERROR M_GET M_POST
+);
 use Apache2::RequestRec ();
 use Apache2::CmdParms ();
 use Apache2::RequestIO ();
@@ -15,7 +17,8 @@ use JSON::Syck qw(Dump Load);
 
 use base q(Apache2::Module);
 
-our $VERSION = "0.01";
+our $VERSION = "0.02";
+(our $JAVASCRIPT = __FILE__) =~ s{\.pm$}{.js};
 
 __PACKAGE__->add([ CookOptions(
     [
@@ -57,6 +60,20 @@ sub config {
 sub handler {
     my($class, $r) = @_;
     
+    if($r->method_number == M_GET || $r->header_only) {
+        $r->content_type("text/javascript");
+        $r->sendfile($JAVASCRIPT);
+        return OK;
+    } elsif($r->method_number == M_POST) {
+        return $class->jsonrpc_handler($r);
+    } else {
+        $r->log_reason("Unsupported method " . $r->method);
+        return HTTP_BAD_REQUEST;
+    }
+}
+
+sub jsonrpc_handler {
+    my($class, $r) = @_;
     my $config = $class->config($r);
     
     unless($config->{JSONRPC_Class}) {
@@ -162,16 +179,64 @@ it's arguments are determined by the JSON payload coming from the
 browser, and the package to call this method on is determined by
 the C<JSONRPC_Class> apache config directive.
 
-A sample "dispatcher" module is supplied, L<Apache2::JSONRPC::Dispatcher>
+A sample "dispatcher" module is supplied,
+L<Apache2::JSONRPC::Dispatcher|Apache2::JSONRPC::Dispatcher>
 
 B<Note:> I<This is an alpha release. The interface is somewhat stable and
 well-tested, but other changes may come as I work in implementing this on
 my website.>
 
+=head1 USAGE
+
+When contacted with a GET request, Apache2::JSONRPC will reply with the
+contents of JSONRPC.js, which contains code that can be used to create
+JavaScript classes that can communicate with their Perl counterparts.
+See the /examples/hello.html file for some sample JavaScript that uses
+this library, and /examples/httpd.conf for the corresponding Perl.
+
+When contacted with a POST request, Apache2::JSONRPC will attempt to
+process and dispatch a JSONRPC request. If a valid JSONRPC request was
+sent in the POST data, a method in the class specified by the
+C<JSONRPC_Class> apache config directive will be called, with the following
+arguments:
+
+=over
+
+=item $class
+
+Just like any other class method, the first argument passed in will be
+name of the class being invoked.
+
+=item $id
+
+The object ID string from the JSONRPC request. In accordance with the
+json-rpc spec, your response will only be sent to the client if this
+value is defined.
+
+=item @params
+
+All further arguments to the method will be the arugments passed in
+the "params" section of the JSONRPC request.
+
+=back
+
+If the client specified an C<id>, your method's return value will be serialized
+into a JSON array and sent to the client as the "result" section of the
+JSONRPC response.
+
+=head2 The default dispatcher
+
+The default dispatcher adds another layer of functionality; it expects the
+first argument in @params to be the name of the class the method is being
+invoked on. See L<Apache2::JSONRPC::Dispatcher> for more details on that.
+
 =head1 AUTHOR
 
 Tyler "Crackerjack" MacDonald <japh@crackerjack.net> and
-David Labatte <buggyd@justanotherperlhacker.com>
+David Labatte <buggyd@justanotherperlhacker.com>.
+
+A lot of the JavaScript code was borrowed from Ingy döt Net's
+L<Jemplate|Jemplate> package.
 
 =head1 LICENSE
 
@@ -182,8 +247,7 @@ itself.
 
 =head1 SEE ALSO
 
-The "examples" directory that comes with the distribution contains a few
-JSONRPC samples.
+The "examples" directory.
 
 L<JSON::Syck>, L<http://www.json-rpc.org/>.
 
